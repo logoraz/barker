@@ -48,13 +48,15 @@ when omitted, it is derived from SLOT by downcasing and replacing hyphens
 with underscores. TYPE is passed to jzon when writing; with :TYPE BOOLEAN, a
 slot holding NIL is written as false instead of null.
 
-Expands into three forms:
+Expands into four forms:
   - a DEFCLASS with a keyword initarg and an accessor for each slot, where
     the accessor is named TYPE-NAME-SLOT.
   - a method on JZON:COERCED-FIELDS, so JZON:STRINGIFY writes the instance as
     a JSON object. Unbound slots are omitted.
   - a function JSON->TYPE-NAME that parses a JSON string into an instance.
     Keys missing from the string leave their slots unbound.
+  - a function COPY-TYPE-NAME that returns a shallow copy of an instance.
+    Unbound slots stay unbound in the copy.
 
 Example:
   (define-json-type click-event
@@ -80,4 +82,14 @@ Example:
                :do (multiple-value-bind (value found) (gethash key table)
                      (when found
                        (setf (slot-value obj slot) value))))
-         obj))))
+         obj))
+
+     (defun ,(intern (format nil "COPY-~A" type-name)) (obj)
+       "Return a shallow copy of OBJ with the same bound slots."
+       (let ((new (make-instance ',type-name)))
+         ,@(mapcar (lambda (spec)
+                     `(when (slot-boundp obj ',(first spec))
+                        (setf (slot-value new ',(first spec))
+                              (slot-value obj ',(first spec)))))
+                   slot-specs)
+         new))))

@@ -12,7 +12,8 @@
            #:header-cont-signal
            #:header-stop-signal
            #:json->header
-           #:*header-with-clicks*)
+           #:*header-with-clicks*
+           #:copy-header)
   (:export #:swblock
            #:swblock-align
            #:swblock-background
@@ -32,7 +33,8 @@
            #:swblock-short-text
            #:swblock-urgent
            #:json->swblock
-           #:default-swblock)
+           #:default-swblock
+           #:copy-swblock)
   (:export #:click-event
            #:click-event-button
            #:click-event-name
@@ -44,7 +46,8 @@
            #:click-event-width
            #:click-event-x
            #:click-event-y
-           #:json->click-event)
+           #:json->click-event
+           #:copy-click-event)
   (:export #:name-of)
   (:documentation "swaybar/i3bar protocol"))
 

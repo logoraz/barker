@@ -74,7 +74,7 @@ procedure is not a function."
   (let ((procedure (bkblock-procedure bkblock))
         (body (bkblock-body bkblock)))
     (when (functionp procedure)
-      (setf (bkblock-body bkblock) (funcall procedure body))
+      (setf (bkblock-body bkblock) (funcall procedure (copy-swblock body)))
       (funcall notify))))
 
 (defun bkblock-handle-click (bkblock event notify)
@@ -84,7 +84,7 @@ handler is not a function."
   (let ((handler (bkblock-click-handler bkblock))
         (body (bkblock-body bkblock)))
     (when (functionp handler)
-      (setf (bkblock-body bkblock) (funcall handler event body))
+      (setf (bkblock-body bkblock) (funcall handler event (copy-swblock body)))
       (funcall notify))))
 
 (defun bkblock-run (bkblock notify)
@@ -103,7 +103,7 @@ repeat every interval seconds. Never returns for a numeric interval."
         (do-procedure bkblock notify)))))
 
 
-;;; defblock
+;;; Config API
 
 (defvar *blocks* '()
   "Registry holding (NAME . BKBLOCK) instances.")

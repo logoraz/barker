@@ -28,7 +28,7 @@
 (in-suite interface-suite)
 
 
-;; Listeners
+;;; Listeners
 
 (defun named-block (name &rest initargs)
   "Make a bkblock whose body is named NAME, passing INITARGS through."
@@ -134,8 +134,72 @@
         (is (string= (format nil "[{\"full_text\":\"a\"}],~%")
                      (get-output-stream-string out)))))
 
+(test write-bar-never-tears-a-body
+      "Concurrent in-place updates are never half-applied on the bar."
+      (let* ((body (make-instance 'sp:swblock :full-text "off" :urgent nil))
+             (bb (make-instance
+                  'bk:bkblock
+                  :body body
+                  :procedure (lambda (b)
+                               (if (string= (sp:swblock-full-text b) "on")
+                                   (setf (sp:swblock-full-text b) "off"
+                                         (sp:swblock-urgent b) nil)
+                                   (setf (sp:swblock-full-text b) "on"
+                                         (sp:swblock-urgent b) t))
+                               b)))
+             (done nil)
+             (torn 0)
+             (flipper (bt2:make-thread
+                       (lambda ()
+                         (dotimes (i 100000)
+                           (bk:do-procedure bb (lambda ())))
+                         (setf done t)))))
+        (loop until done
+              do (let* ((line (with-output-to-string (out)
+                                (lr::write-bar (list bb) out)))
+                        (h (aref (com.inuoe.jzon:parse
+                                  (string-right-trim '(#\, #\Newline) line))
+                                 0)))
+                   (unless (eq (string= (gethash "full_text" h) "on")
+                               (and (gethash "urgent" h) t))
+                     (incf torn))))
+        (bt2:join-thread flipper)
+        (is (zerop torn))))
 
-;; Startup
+(test write-bar-never-tears-a-clicked-body
+      "Concurrent in-place click handlers are never half-applied on the bar."
+      (let* ((body (make-instance 'sp:swblock :full-text "off" :urgent nil))
+             (bb (make-instance
+                  'bk:bkblock
+                  :body body
+                  :click-handler (lambda (event b)
+                                   (declare (ignore event))
+                                   (if (string= (sp:swblock-full-text b) "on")
+                                       (setf (sp:swblock-full-text b) "off"
+                                             (sp:swblock-urgent b) nil)
+                                       (setf (sp:swblock-full-text b) "on"
+                                             (sp:swblock-urgent b) t))
+                                   b)))
+             (done nil)
+             (torn 0)
+             (clicker (bt2:make-thread
+                       (lambda ()
+                         (dotimes (i 100000)
+                           (bk:bkblock-handle-click bb nil (lambda ())))
+                         (setf done t)))))
+        (loop until done
+              do (let* ((line (with-output-to-string (out)
+                                (lr::write-bar (list bb) out)))
+                        (h (aref (com.inuoe.jzon:parse
+                                  (string-right-trim '(#\, #\Newline) line))
+                                 0)))
+                   (unless (eq (string= (gethash "full_text" h) "on")
+                               (and (gethash "urgent" h) t))
+                     (incf torn))))
+        (bt2:join-thread clicker)
+        (is (zerop torn))))
+
+;;; Startup
 
 (defun quietly-load-config ()
   "Call load-config with standard error discarded; return its blocks."
