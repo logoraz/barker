@@ -4,8 +4,6 @@
 ;;;; Licensed under the LGPL-2.1-only with the LLGPL preamble;
 ;;;; see the LICENSE file in this repository.
 
-;;; lib.lisp
-
 (defpackage #:barker/tests/lib
   (:use #:cl #:5am)
   (:local-nicknames (#:jzon #:com.inuoe.jzon)

@@ -3,17 +3,14 @@
   :author "Erik P. Almaraz"
   :license "LGPL-2.1-only WITH LLGPL"
   :version (:read-file-form "data/version.sexp" :at (0 1))
-  :depends-on ("sb-posix" "sb-concurrency"
-               "khazern-intrinsic"
-               "khazern-extension-intrinsic"
+  :depends-on ("sb-posix"
+               "sb-concurrency"
                "bordeaux-threads"
-               "cl-ppcre"
                "trivial-gray-streams"
                "com.inuoe.jzon")
   :components ((:module "lib"
                 :pathname "code/lib"
                 :components ((:file "syntax")
-                             (:file "ansi-color" :depends-on ("syntax"))
                              (:file "platform")
                              (:file "jzon-ext")))
                (:module "base"

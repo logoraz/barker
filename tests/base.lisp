@@ -4,8 +4,6 @@
 ;;;; Licensed under the LGPL-2.1-only with the LLGPL preamble;
 ;;;; see the LICENSE file in this repository.
 
-;;; base.lisp
-
 (defpackage #:barker/tests/base
   (:use #:cl #:5am)
   (:import-from #:barker/tests/suite
