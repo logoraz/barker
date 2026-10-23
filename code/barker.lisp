@@ -9,9 +9,16 @@
         #:barker/lib/platform
         #:barker/base/swaybar-protocol
         #:barker/base/bkblock
+        #:barker/blocks/support
         #:barker/listeners)
   (:local-nicknames (#:jzon #:com.inuoe.jzon))
-  (:export #:main)
+  (:export #:main
+           #:config-file
+           #:default-block
+           #:error-block
+           #:load-config
+           #:write-header
+           #:run)
   (:documentation "Startup and Entry for Barker."))
 
 (in-package #:barker)

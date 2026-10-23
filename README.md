@@ -16,9 +16,9 @@ barker is packaged in [guixos](https://github.com/logoraz/guixos) as
 
 ### From source
 
-Dependencies: SBCL, bordeaux-threads, cl-ppcre, jzon,
-trivial-gray-streams, khazern. Install via
-`ocicl install git+https://github.com/logoraz/barker` into your local
+Dependencies: SBCL, bordeaux-threads, jzon, trivial-gray-streams.
+Install via
+`ocicl install git+https://codeberg.org/logoraz/barker` into your local
 project `ocicl/` directory, then:
 
 ```lisp

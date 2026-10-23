@@ -8,10 +8,13 @@
 
 (defpackage #:barker/blocks/clock
   (:use #:cl)
-  (:local-nicknames (#:bk #:barker/base/bkblock)
-                    (#:sp #:barker/base/swaybar-protocol)
-                    (#:gray #:trivial-gray-streams)
-                    (#:support #:barker/blocks/support))
+  (:import-from #:barker/base/swaybar-protocol
+                #:swblock-full-text)
+  (:import-from #:barker/base/bkblock
+                #:defkind)
+  (:import-from #:barker/blocks/support
+                #:strftime)
+  (:local-nicknames (#:gray #:trivial-gray-streams))
   (:documentation "Clock block: local time redrawn on each second."))
 
 (in-package #:barker/blocks/clock)
@@ -37,11 +40,11 @@
   (sleep-until-next-second)
   (values "" nil))
 
-(bk:defkind clock (&key (format "%c"))
+(defkind clock (&key (format "%c"))
   "Local time shown with the strftime FORMAT, updated every second."
   (list :interval :persistent
         :event-source (lambda () (make-instance 'second-ticker))
         :procedure (lambda (body)
-                     (setf (sp:swblock-full-text body)
-                           (support:strftime format))
+                     (setf (swblock-full-text body)
+                           (strftime format))
                      body)))

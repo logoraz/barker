@@ -6,10 +6,17 @@
 
 (defpackage #:barker/listeners
   (:use #:cl)
-  (:local-nicknames (#:jzon #:com.inuoe.jzon)
-                    (#:pf #:barker/lib/platform)
-                    (#:bk #:barker/base/bkblock)
-                    (#:sp #:barker/base/swaybar-protocol))
+  (:import-from #:barker/lib/platform
+                #:notifier-wait)
+  (:import-from #:barker/base/swaybar-protocol
+                #:name-of
+                #:json->click-event)
+  (:import-from #:barker/base/bkblock
+                #:do-procedure
+                #:bkblock-body
+                #:bkblock-event-source
+                #:bkblock-handle-click)
+  (:local-nicknames (#:jzon #:com.inuoe.jzon))
   (:export #:update-listener
            #:click-listener
            #:event-source-listener)
@@ -22,7 +29,7 @@
 (defun write-bar (bkblocks stream)
   "Write one bar line to STREAM: the bodies of BKBLOCKS as a JSON array,
 followed by a comma and a newline."
-  (let ((bodies (map 'vector #'bk:bkblock-body bkblocks)))
+  (let ((bodies (map 'vector #'bkblock-body bkblocks)))
     (jzon:stringify bodies :stream stream)
     (format stream ",~%")
     (finish-output stream)))
@@ -31,19 +38,19 @@ followed by a comma and a newline."
   "Wait on NOTIFIER; after each wake-up, write the bar for BKBLOCKS to
 STREAM. Never returns."
   (loop
-       (pf:notifier-wait notifier)
+       (notifier-wait notifier)
        (write-bar bkblocks stream)))
 
 (defun start-event-thread (bb notify)
   "Start a thread that updates BB on every line of its event source."
-  (let ((event-source (bk:bkblock-event-source bb)))
+  (let ((event-source (bkblock-event-source bb)))
     (when event-source
       (bt2:make-thread
        (lambda ()
          (let ((input (funcall event-source)))
            (loop :for line = (read-line input nil :eof)
                  :until (eq line :eof)
-                 :do (bk:do-procedure bb notify))))))))
+                 :do (do-procedure bb notify))))))))
 
 
 (defun event-source-listener (notify bkblocks)
@@ -51,7 +58,7 @@ STREAM. Never returns."
 Each thread reads lines from its source and updates the block on every
 line. NOTIFY is a function of no arguments."
   (loop :for bb :in bkblocks
-        :when (bk:bkblock-event-source bb)
+        :when (bkblock-event-source bb)
         :collect (start-event-thread bb notify)))
 
 
@@ -59,7 +66,7 @@ line. NOTIFY is a function of no arguments."
   "Return the bkblock in BKBLOCKS whose body is named NAME, or NIL."
   (find name bkblocks
         :key (lambda (bb)
-               (sp:name-of (bk:bkblock-body bb)))
+               (name-of (bkblock-body bb)))
         :test #'equal))
 
 (defun click-listener (notify bkblocks stream)
@@ -69,8 +76,8 @@ Returns when STREAM reaches EOF."
   (read-line stream nil nil) ; discard "[" line
   (loop :for line = (read-line stream nil :eof)
         :until (eq line :eof)
-        :do (let* ((event (sp:json->click-event (string-trim "," line)))
-                    (name (sp:name-of event))
+        :do (let* ((event (json->click-event (string-trim "," line)))
+                    (name (name-of event))
                     (bb (find-block name bkblocks)))
               (when (and name bb)
-                (bk:bkblock-handle-click bb event notify)))))
+                (bkblock-handle-click bb event notify)))))

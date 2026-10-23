@@ -8,9 +8,15 @@
 
 (defpackage #:barker/blocks/battery
   (:use #:cl)
-  (:local-nicknames (#:bk #:barker/base/bkblock)
-                    (#:sp #:barker/base/swaybar-protocol)
-                    (#:support #:barker/blocks/support))
+  (:import-from #:barker/base/swaybar-protocol
+                #:swblock-full-text
+                #:swblock-urgent)
+  (:import-from #:barker/base/bkblock
+                #:defkind)
+  (:import-from #:barker/blocks/support
+                #:glyphs
+                #:guarded
+                #:read-file-line)
   (:documentation "Battery block: charge level read from sysfs."))
 
 (in-package #:barker/blocks/battery)
@@ -20,11 +26,11 @@
   "Directory that lists the system's power supplies.")
 
 (defparameter *icons*
-  (support:glyphs #xF007A #xF007B #xF007C #xF007D #xF007E
-                  #xF007F #xF0080 #xF0081 #xF0082 #xF0079)
+  (glyphs #xF007A #xF007B #xF007C #xF007D #xF007E
+          #xF007F #xF0080 #xF0081 #xF0082 #xF0079)
   "Nerd font battery icons, from nearly empty to full.")
 
-(defparameter *charging-icon* (aref (support:glyphs #xF0084) 0)
+(defparameter *charging-icon* (aref (glyphs #xF0084) 0)
   "Nerd font icon shown while the battery charges.")
 
 (defun find-power-supply (prefix &optional (default ""))
@@ -48,7 +54,7 @@ path for PREFIX followed by DEFAULT."
                                        (floor level 10))))
         (t "BAT:")))
 
-(bk:defkind battery (&key (format "~a ~a%") nerd-icons bat ac)
+(defkind battery (&key (format "~a ~a%") nerd-icons bat ac)
   "Battery level every 3 seconds. BAT and AC are sysfs supply directories."
   (let ((capacity (concatenate 'string
                                (or bat (find-power-supply "BAT" 0))
@@ -59,15 +65,15 @@ path for PREFIX followed by DEFAULT."
     (list :interval 3
           :body (list :full-text "N/A")
           :procedure
-          (support:guarded
+          (guarded
            (lambda (body)
-             (let* ((level (parse-integer (support:read-file-line capacity)))
+             (let* ((level (parse-integer (read-file-line capacity)))
                     (charging (eql 1 (ignore-errors
                                       (parse-integer
-                                       (support:read-file-line online))))))
-               (setf (sp:swblock-full-text body)
+                                       (read-file-line online))))))
+               (setf (swblock-full-text body)
                      (format nil format
                              (battery-label level charging nerd-icons)
                              level)
-                     (sp:swblock-urgent body) (<= level 10))
+                     (swblock-urgent body) (<= level 10))
                body))))))

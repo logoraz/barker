@@ -8,27 +8,32 @@
 
 (defpackage #:barker/blocks/volume
   (:use #:cl)
-  (:local-nicknames (#:bk #:barker/base/bkblock)
-                    (#:sp #:barker/base/swaybar-protocol)
-                    (#:jzon #:com.inuoe.jzon)
-                    (#:support #:barker/blocks/support))
+  (:import-from #:barker/base/swaybar-protocol
+                #:swblock-full-text)
+  (:import-from #:barker/base/bkblock
+                #:defkind)
+  (:import-from #:barker/blocks/support
+                #:glyphs
+                #:command-output
+                #:guarded)
+  (:local-nicknames (#:jzon #:com.inuoe.jzon))
   (:documentation "Volume block: default sink volume from pactl."))
 
 (in-package #:barker/blocks/volume)
 
 
-(defparameter *icons* (support:glyphs #xF057F #xF0580 #xF057E)
+(defparameter *icons* (glyphs #xF057F #xF0580 #xF057E)
   "Nerd font volume icons, from quiet to loud.")
 
-(defparameter *muted-icon* (aref (support:glyphs #xF0581) 0)
+(defparameter *muted-icon* (aref (glyphs #xF0581) 0)
   "Nerd font icon shown while the sink is muted.")
 
 (defun default-sink (pactl)
   "Return the parsed JSON object of the default sink, or NIL."
-  (let ((sinks (jzon:parse (support:command-output pactl "-f" "json"
+  (let ((sinks (jzon:parse (command-output pactl "-f" "json"
                                                    "list" "sinks")))
         (name (string-trim '(#\Space #\Newline)
-                           (support:command-output pactl
+                           (command-output pactl
                                                    "get-default-sink"))))
     (find name sinks
           :key (lambda (sink) (gethash "name" sink))
@@ -50,14 +55,14 @@
                                       (floor percent 34))))))
     (format nil "~a ~a" icon percent)))
 
-(bk:defkind volume (&key (pactl-command "pactl"))
+(defkind volume (&key (pactl-command "pactl"))
   "Default sink volume, updated on signal 2 (SIGRTMIN+2)."
   (list :trigger 2
         :interval :persistent
         :procedure
-        (support:guarded
+        (guarded
          (lambda (body)
            (let ((sink (default-sink pactl-command)))
-             (setf (sp:swblock-full-text body)
+             (setf (swblock-full-text body)
                    (if sink (sink-text sink) "N/A"))
              body)))))

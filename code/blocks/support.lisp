@@ -6,8 +6,9 @@
 
 (defpackage #:barker/blocks/support
   (:use #:cl)
-  (:local-nicknames (#:sp #:barker/base/swaybar-protocol)
-                    (#:sba #:sb-alien))
+  (:import-from #:barker/base/swaybar-protocol
+                #:swblock-full-text)
+  (:local-nicknames (#:sba #:sb-alien))
   (:export #:glyphs
            #:guarded
            #:command-output
@@ -31,7 +32,7 @@ return the body, so one failing block never takes down the bar."
   (lambda (body)
     (handler-case (funcall procedure body)
       (error ()
-        (setf (sp:swblock-full-text body) fallback)
+        (setf (swblock-full-text body) fallback)
         body))))
 
 

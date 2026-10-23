@@ -10,8 +10,7 @@
                "com.inuoe.jzon")
   :components ((:module "lib"
                 :pathname "code/lib"
-                :components ((:file "syntax")
-                             (:file "platform")
+                :components ((:file "platform")
                              (:file "jzon-ext")))
                (:module "base"
                 :pathname "code/base"

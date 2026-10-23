@@ -8,21 +8,26 @@
 
 (defpackage #:barker/blocks/network-manager
   (:use #:cl)
-  (:local-nicknames (#:bk #:barker/base/bkblock)
-                    (#:sp #:barker/base/swaybar-protocol)
-                    (#:support #:barker/blocks/support))
+  (:import-from #:barker/base/swaybar-protocol
+                #:swblock-full-text)
+  (:import-from #:barker/base/bkblock
+                #:defkind)
+  (:import-from #:barker/blocks/support
+                #:glyphs
+                #:command-output
+                #:guarded)
   (:documentation "Network block: wifi or ethernet state from nmcli."))
 
 (in-package #:barker/blocks/network-manager)
 
 
-(defparameter *wifi-icons* (support:glyphs #xF091F #xF0922 #xF0925 #xF0928)
+(defparameter *wifi-icons* (glyphs #xF091F #xF0922 #xF0925 #xF0928)
   "Nerd font wifi icons, from weak to strong signal.")
 
-(defparameter *ethernet-icon* (aref (support:glyphs #xF0200) 0)
+(defparameter *ethernet-icon* (aref (glyphs #xF0200) 0)
   "Nerd font icon shown while connected by ethernet.")
 
-(defparameter *disconnected-icon* (aref (support:glyphs #xF092D) 0)
+(defparameter *disconnected-icon* (aref (glyphs #xF092D) 0)
   "Nerd font icon shown while not connected.")
 
 (defun split-lines (string)
@@ -57,13 +62,13 @@ A backslash escapes the next character, so an SSID may contain colons."
               (split-terse line)
             (declare (ignore rest))
             (and (equal type "ethernet") (equal state "connected"))))
-        (split-lines (support:command-output
+        (split-lines (command-output
                       "nmcli" "-t" "-f" "TYPE,STATE" "device" "status"))))
 
 (defun active-wifi ()
   "Return (SSID SIGNAL) for the wifi network in use, or NIL."
   (dolist (line (split-lines
-                 (support:command-output
+                 (command-output
                   "nmcli" "-t" "-f" "SSID,IN-USE,SIGNAL"
                   "device" "wifi" "list")))
     (destructuring-bind (&optional ssid in-use (strength "") &rest rest)
@@ -97,13 +102,13 @@ With SHOW-SSID, follow the wifi icon with the network name."
     (error ()
       (make-string-input-stream ""))))
 
-(bk:defkind network-manager (&key ssid)
+(defkind network-manager (&key ssid)
   "Network state, updated on every nmcli event. SSID shows the network."
   (list :interval :persistent
         :event-source #'monitor-stream
         :body (list :full-text (string (code-char #x2026)))
         :procedure
-        (support:guarded
+        (guarded
          (lambda (body)
-           (setf (sp:swblock-full-text body) (status-text ssid))
+           (setf (swblock-full-text body) (status-text ssid))
            body))))

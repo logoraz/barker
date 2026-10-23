@@ -11,10 +11,14 @@
 
 (defpackage #:barker/blocks/xkb-layout
   (:use #:cl)
-  (:local-nicknames (#:bk #:barker/base/bkblock)
-                    (#:sp #:barker/base/swaybar-protocol)
-                    (#:jzon #:com.inuoe.jzon)
-                    (#:support #:barker/blocks/support))
+  (:import-from #:barker/base/swaybar-protocol
+                #:swblock-full-text)
+  (:import-from #:barker/base/bkblock
+                #:defkind)
+  (:import-from #:barker/blocks/support
+                #:command-output
+                #:guarded)
+  (:local-nicknames (#:jzon #:com.inuoe.jzon))
   (:documentation "XKB layout block: the active keyboard layout."))
 
 (in-package #:barker/blocks/xkb-layout)
@@ -22,7 +26,7 @@
 
 (defun active-layout ()
   "Return (NAME INDEX) for the first input with an active layout, or NIL."
-  (let ((inputs (jzon:parse (support:command-output "swaymsg" "-rt"
+  (let ((inputs (jzon:parse (command-output "swaymsg" "-rt"
                                                     "get_inputs"))))
     (loop :for input :across inputs
           :for index = (gethash "xkb_active_layout_index" input)
@@ -35,15 +39,15 @@
       (cdr (assoc index alias-pairs :test #'equal))
       name))
 
-(bk:defkind xkb-layout (&key alias-pairs)
+(defkind xkb-layout (&key alias-pairs)
   "Active layout, updated on signal 3 (SIGRTMIN+3).
 ALIAS-PAIRS is an alist from layout name or index to display text."
   (list :trigger 3
         :interval :persistent
         :procedure
-        (support:guarded
+        (guarded
          (lambda (body)
            (destructuring-bind (name index) (active-layout)
-             (setf (sp:swblock-full-text body)
+             (setf (swblock-full-text body)
                    (layout-alias alias-pairs name index))
              body)))))
