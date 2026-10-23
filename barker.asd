@@ -40,11 +40,6 @@
   :entry-point "barker:main")
 
 
-;;; Register Systems
-(register-system-packages "bordeaux-threads" '(:bt :bt2))
-(register-system-packages "fiveam" '(:5am))
-
-
 ;;; Subsystems
 
 (defsystem "barker/tests"
