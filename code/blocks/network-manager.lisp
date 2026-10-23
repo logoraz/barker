@@ -9,7 +9,8 @@
 (defpackage #:barker/blocks/network-manager
   (:use #:cl)
   (:import-from #:barker/base/swaybar-protocol
-                #:swblock-full-text)
+                #:swblock-full-text
+                #:click-event-button)
   (:import-from #:barker/base/bkblock
                 #:defkind)
   (:import-from #:barker/blocks/support
@@ -102,10 +103,20 @@ With SHOW-SSID, follow the wifi icon with the network name."
     (error ()
       (make-string-input-stream ""))))
 
+(defun open-network-editor (event body)
+  "Launch the network editor on a left click. Return BODY unchanged."
+  (when (eql 1 (click-event-button event))
+    (ignore-errors
+      (sb-ext:run-program "nm-connection-editor" nil
+                          :search t :wait nil
+                          :input nil :output nil :error nil)))
+  body)
+
 (defkind network-manager (&key ssid)
   "Network state, updated on every nmcli event. SSID shows the network."
   (list :interval :persistent
         :event-source #'monitor-stream
+        :click-handler #'open-network-editor
         :body (list :full-text (string (code-char #x2026)))
         :procedure
         (guarded
