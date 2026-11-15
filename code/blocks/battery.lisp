@@ -1,11 +1,3 @@
-;;;; SPDX-License-Identifier: LGPL-2.1-only WITH LLGPL
-;;;; Copyright (C) 2026 Erik P Almaraz
-;;;;
-;;;; Licensed under the LGPL-2.1-only with the LLGPL preamble;
-;;;; see the LICENSE file in this repository.
-
-;;; Port of gubar's battery block.
-
 (defpackage #:barker/blocks/battery
   (:use #:cl)
   (:import-from #:barker/base/swaybar-protocol

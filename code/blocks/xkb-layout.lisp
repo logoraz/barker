@@ -1,14 +1,3 @@
-;;;; SPDX-License-Identifier: LGPL-2.1-only WITH LLGPL
-;;;; Copyright (C) 2026 Erik P Almaraz
-;;;;
-;;;; Licensed under the LGPL-2.1-only with the LLGPL preamble;
-;;;; see the LICENSE file in this repository.
-
-;;; Port of gubar's xkb-layout block.
-;;; Example binding within ~/.config/sway/config:
-;;;   bindsym --release $mod+Control_R exec swaymsg input type:keyboard \
-;;;     xkb_switch_layout next && pkill -SIGRTMIN+3 -n barker
-
 (defpackage #:barker/blocks/xkb-layout
   (:use #:cl)
   (:import-from #:barker/base/swaybar-protocol

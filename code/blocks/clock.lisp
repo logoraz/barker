@@ -1,11 +1,3 @@
-;;;; SPDX-License-Identifier: LGPL-2.1-only WITH LLGPL
-;;;; Copyright (C) 2026 Erik P Almaraz
-;;;;
-;;;; Licensed under the LGPL-2.1-only with the LLGPL preamble;
-;;;; see the LICENSE file in this repository.
-
-;;; Port of gubar's date-time block, event-source driven only.
-
 (defpackage #:barker/blocks/clock
   (:use #:cl)
   (:import-from #:barker/base/swaybar-protocol

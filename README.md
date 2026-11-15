@@ -154,13 +154,11 @@ bindsym --release XF86MonBrightnessDown exec pkill -SIGRTMIN+4 -n barker
   `(list :system ',system ,@plist))
 
 (license-terms barker
-  :type        '(:|LGPL-2.1-only WITH LLGPL| . "https://spdx.org/licenses/LLGPL.html")
-  :permissions '(:use :copy :modify :distribute :link)
+  :type        '(:MIT . "https://spdx.org/licenses/MIT.html")
+  :permissions '(:use :copy :modify :merge :publish :distribute
+                 :sublicense :sell)
   :conditions  '(:include-copyright-notice
-                 :disclose-source-lib
-                 :same-license-lib
-                 :state-changes
-                 :lisp-linking)
+                 :include-license-notice)
   :warranty    nil)
 ```
 
